@@ -14,14 +14,18 @@ import javax.swing.table.AbstractTableModel;
 public class ModeleTableau extends AbstractTableModel{
     private String jours [] = {"    ","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"};
     private Object horaires [][]=
-    {{"8h30-10h","","","","","",""},
+    {
+        {"8h30-10h","","","","","",""},
         {"10h15-11h45","","","","","",""},
         {"12h-13h30","","","","","",""},
         {"13h45-15h15","","","","","",""},
         {"15h30-17h","","","","","",""},
         {"17h15-18h45","","","","","",""},
         {"19h-20h30","","","","","",""},
-        {"20H45-22h15","","","","","",""}};
+        {"20H45-22h15","","","","","",""}
+    };
+    
+  
     //Constructeur
     public ModeleTableau(){
         this.jours = jours;
@@ -46,6 +50,12 @@ public class ModeleTableau extends AbstractTableModel{
     public Object getValueAt(int rowIndex, int columnIndex) {
        return horaires[rowIndex][columnIndex];
     }
+    
 
+    //Permet de modifier une valeur du tableau via les index
+    public void setValueAt(int rowIndex, int columnIndex, String nv_valeur)
+    {
+        horaires[rowIndex][columnIndex] =  nv_valeur;
+    }
             
 }
