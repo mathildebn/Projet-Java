@@ -17,5 +17,8 @@ public class edtFenetre {
         
         Lafenetre fen = new Lafenetre(1200,850,"Hyperplanning");
         fen.setVisible(true);
+            
+      
+        
     }
 }

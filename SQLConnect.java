@@ -7,6 +7,9 @@ import java.util.*;
 /*
 Les lignes obligatoires pour le sql :
 
+Pré rquis :
+import java.sql.*;
+
 1 - Charger le driver SQL pour Java : Class.forName("com.mysql.jdbc.Driver");
 2 - Définir le serveur, la bdd et l'utilisateur : Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/nom_bdd","root","");
 3 - Pour exécuter une requête :
