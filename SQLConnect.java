@@ -3,6 +3,11 @@ import java.sql.*;
 import java.util.Scanner;
 import java.util.*;
 
+/**
+ *
+ * @author Thanh Kieu
+ */
+
 
 /*
 Les lignes obligatoires pour le sql :
