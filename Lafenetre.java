@@ -27,6 +27,9 @@ import java.util.Scanner;
 
 import javax.swing.JComboBox;
 import java.util.ArrayList;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 
 /**
@@ -40,6 +43,18 @@ public class Lafenetre extends JFrame implements ActionListener {
     JButton BtnAjouterValeur = new JButton("Ajouter le cours");
     JTable table = new JTable(grilles);
     JPanel fond = new JPanel();
+    //JFrame frame = new JFrame("Hyperplanning");
+    
+    JMenuBar mb = new JMenuBar();
+    JMenu menuCours = new JMenu("Cours");
+    JMenu menuSalle = new JMenu("Salles");
+    JMenuItem i1= new JMenuItem ("Emploi du temps");
+    JMenuItem i2= new JMenuItem ("Récapitulatif des cours");
+    JMenuItem i3= new JMenuItem ("Salles libres");
+    
+    
+    
+    
     
         JComboBox menu_heure_debut;
         JComboBox menu_heure_fin;
@@ -87,7 +102,14 @@ public class Lafenetre extends JFrame implements ActionListener {
         fond.setPreferredSize(new Dimension(1200,850));
         setContentPane(fond);
         fond.setBackground(Color.LIGHT_GRAY);
-        fond.setVisible(true);
+       
+        mb.add(menuCours);
+        mb.add(menuSalle);
+        menuCours.add(i1);
+        menuCours.add(i2);
+        menuSalle.add(i3);
+        setJMenuBar(mb);  
+        
         
         //Grilles
         //ModeleTableau grilles = new ModeleTableau();
@@ -171,6 +193,8 @@ fond.add(menu_salle);
         fond.add(BtnAjouterValeur);
 
         fond.add(scrollPane);
+        
+        
         
     }
     
