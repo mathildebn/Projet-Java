@@ -5,6 +5,7 @@
  */
 package modele;
 
+import java.util.Arrays;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -58,5 +59,21 @@ public class ModeleTableau extends AbstractTableModel{
     {
         horaires[rowIndex][columnIndex] =  nv_valeur;
     }
+    
+    
+    
+    //Permet de vider le contenu de l'EDT affiché dans la fenêtre uniquement (ne supprime pas les cours de la BDD)
+    public void clearTableau()
+    {
+                  
+        for(int ligne = 0; ligne <= 7; ligne++)
+        {
+            for(int colonne = 1; colonne <= 6; colonne++)
+            {
+                this.setValueAt(ligne, colonne, "");            
+            }
+        }
+
+     }
             
 }
