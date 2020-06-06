@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package vue;
+//package vue;
 
-import vue.FenetreConnexion;
+//import vue.FenetreConnexion;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -14,7 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import modele.ModeleTableau;
+//import modele.ModeleTableau;
 
 //Nouveaux imports
 import javax.swing.JButton;
@@ -26,12 +26,17 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JLabel;
 
-
+//Imports pour camembert
+import org.jfree.chart.*; 
+import org.jfree.chart.plot.*; 
+import org.jfree.data.*; 
+import org.jfree.data.general.DefaultPieDataset;
 /**
  *
  * @author NivineDiallo & Thanh Kieu
@@ -62,6 +67,7 @@ public class Lafenetre extends JFrame implements ActionListener {
         JLabel Info_creer_nvCours =  new JLabel("Choisir parmis les options suivantes pour créer une nouvelle séance");
         JButton BtnAjouterValeur = new JButton("Ajouter le cours");
         JButton BtnSupprimerTout = new JButton("Supprimer les cours");
+        JButton BtnCamembert = new JButton("Afficher statistiques");
         JComboBox menu_heure_debut;
         JComboBox menu_heure_fin;
         JComboBox menu_jour;
@@ -95,7 +101,8 @@ public class Lafenetre extends JFrame implements ActionListener {
           String valeur_comboBox_coursIndex;
           String valeur_comboBox_salleIndex;
           String valeur_comboBox_groupeIndex;
-          
+      
+
         
     //Fin des déclarations
           
@@ -216,11 +223,14 @@ public void actionPerformed(ActionEvent evenement)
 
             }
             
-            
+            //Si on clique sur le bouton d'affichage des statistiques des cours
+            if(ObjetSource == BtnCamembert)
+            {
+                System.out.println("Affichage stats");
+                afficherCamembert();
+            }
+
 }
-
-
-
 
 //Affiche l'emploi du temps du groupe séléctionné dans le combobox menu_groupe            
 public void afficherEDTGroupe()
@@ -236,7 +246,7 @@ public void afficherEDTGroupe()
 
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava?autoReconnect=true&useSSL=false","root","root");
 
        
         //On récupère l'index du groupe sélectionné
@@ -373,7 +383,27 @@ public void afficherEDTGroupe()
 }
 
 
+//Permet d'afficher le camembert
+public void afficherCamembert()
+{
+    //Fenetre de dialogue
+    JDialog cam = new JDialog();
+    cam.setTitle("Statistiques");
+    cam.setSize(600,600);
+    //Camembert
+    DefaultPieDataset pieDataset = new DefaultPieDataset();
+    pieDataset.setValue("Maths", new Integer(getMaths())); 
+    pieDataset.setValue("Finance", new Integer(getFinance())); 
+    pieDataset.setValue("Info", new Integer(getInfo()));
+    pieDataset.setValue("Physique", new Integer(0)); 
+    pieDataset.setValue("Anglais", new Integer(0)); 
 
+    JFreeChart camembert = ChartFactory.createPieChart("Statistiques", 
+    pieDataset, true, true, true); 
+    ChartPanel stat = new ChartPanel(camembert); 
+    cam.getContentPane().add(stat);
+    cam.setVisible(true);
+}
 
 //Permet d'afficher ou non le menu permettant d'ajouter un cours
 public void afficherMenuAjouter(int typeCompte)
@@ -385,6 +415,7 @@ public void afficherMenuAjouter(int typeCompte)
         
         BtnAjouterValeur.addActionListener(this);
         BtnSupprimerTout.addActionListener(this);
+        BtnCamembert.addActionListener(this);
 
              
         menu_heure_debut = new JComboBox(liste_heure_debut);
@@ -402,7 +433,7 @@ public void afficherMenuAjouter(int typeCompte)
 
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
         
         //On prépare la requête permettant d'enregistrer les noms des cours existants dans la table cours
         Statement requeteSQL_cours = connexionSQL.createStatement();
@@ -463,6 +494,7 @@ public void afficherMenuAjouter(int typeCompte)
         conteneur_combobox.add(menu_groupe);
         conteneur_combobox.add(BtnAjouterValeur);
         conteneur_combobox.add(BtnSupprimerTout);
+/*NEW*/ conteneur_combobox.add(BtnCamembert);
                                        
         
         //On force le panel contenant les combobox à rester en haut de la fenêtre
@@ -476,7 +508,9 @@ public void afficherMenuAjouter(int typeCompte)
     
 }
      
-
+/*public void AfficherCamembert(){
+    System.out.println("Afficher");
+}*/
 
 
 //Vérifie si la séance à ajouter existe déjà
@@ -502,12 +536,7 @@ public boolean CheckSiSeanceExiste(int ligneDebut, int ligneFin, int colonneJour
     
     return existe;
 }
-
-     
-                   
-
-
-            
+      
 //Met à jour l'affichage du tableau lorsqu'on modifie la table seance
 public void updateTableau(int n_ligne, int n_colonne, String nouvelle_valeur)
             {
@@ -659,11 +688,100 @@ public void ModifierValeurTableau()
                 
             }
        
-            
-
-            
+           
 //Les méthodes qui intéragissent avec la base SQL
+
+//Permet de récupérer le nombre de cours de maths
+public int getMaths()
+{
+    int nbre_maths = 0;
+    try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+    
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCoursID = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 1");
+        
+        
+        
+        while(resultatgetSQLCoursID.next())
+        {
+            nbre_maths = nbre_maths + 1;
             
+        }
+        
+    }catch(Exception e){ System.out.println(e);}
+    
+        return nbre_maths;    
+   
+}  
+
+//Permet de récupérer le nombre de cours d'info
+public int getInfo()
+{
+    int nbre_info = 0;
+    try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+    
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCoursID = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 2");
+        
+        
+        
+        while(resultatgetSQLCoursID.next())
+        {
+            nbre_info = nbre_info + 1;
+            
+        }
+        
+    }catch(Exception e){ System.out.println(e);}
+    
+        return nbre_info;    
+   
+}  
+
+//Permet de récupérer le nombre de cours de finance
+public int getFinance()
+{
+    int nbre_finance = 0;
+    try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+    
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCoursID = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 3");
+        
+        
+        
+        while(resultatgetSQLCoursID.next())
+        {
+            nbre_finance = nbre_finance + 1;
+            
+        }
+        
+    }catch(Exception e){ System.out.println(e);}
+    
+        return nbre_finance;    
+   
+}
+
+
 //Permet d'ajouter ou de modifier les seances dans la table SQL
 public void majSQL(boolean SeanceExiste, int heure_debut, int heure_fin, String id_cours, String id_salle, String jour, int ligne, int colonne)
 {
@@ -673,7 +791,7 @@ try{
     
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
 
         //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement requeteSQL = connexionSQL.createStatement();
@@ -772,7 +890,7 @@ public void clearTable_Seance_Groupe(String id_groupe)
     
         //On charge les pré-requis pour la communication SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
 
         //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement requeteSQL = connexionSQL.createStatement();
