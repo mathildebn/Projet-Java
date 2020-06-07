@@ -23,15 +23,21 @@ public class edtFenetre {
     String id_user = "vide";
     int typeCompte = 0;
     String nom_groupe = "vide";
+    String id_groupe = "vide";
     
     //Constructeur avec paramètres prenant en compte les infos de l'utilisateur connecté
-    public edtFenetre(String identifiant_SQL, String user, int typeCompteSQL, String NomGroupe)
+    public edtFenetre(String identifiant_SQL, String user, int typeCompteSQL, String NomGroupe, String IDGroupe)
     {
         identifiant = identifiant_SQL;
         id_user = user;
         typeCompte = typeCompteSQL;
         nom_groupe = NomGroupe;
+        id_groupe = IDGroupe;
         
+    }
+
+    public edtFenetre() {
+       
     }
     
     //Retourne le nom d'utilisateur "e-mail"
@@ -45,6 +51,12 @@ public class edtFenetre {
     public String getUserID()
     {
         return id_user;
+    }
+    
+    //Retourne l'id_utilisateur
+    public String getGroupID()
+    {
+        return id_groupe;
     }
     
     //Retourne le nom du groupe auquel appartient l'utilisateur
@@ -64,7 +76,7 @@ public class edtFenetre {
          Lafenetre fen;
          
          //On donne les dimensions par défaut, le titre ainsi que le type de compte de l'utilisateur
-         fen = new Lafenetre(1200,600,Titre_fenetre, typeCompte);
+         fen = new Lafenetre(1400,600,Titre_fenetre, typeCompte, getGroupID());
             
 
         afficherEDT(fen);
@@ -79,7 +91,7 @@ public class edtFenetre {
     {
          try{
           
-            System.out.println("LiaisonSQL()"); 
+            System.out.println("afficherEDT()"); 
 
 
             //Permet de charger le driver pour communiquer avec MySQL
@@ -202,7 +214,7 @@ public class edtFenetre {
               
                                 //Ensuite, on récupère le nom de la salle
                                 Statement requeteSQL_salle = connexionSQL.createStatement();
-                                ResultSet resultat_SQL_NomSalle = requeteSQL_salle.executeQuery("select Nom_salle from salle where Id_salle = '" + id_cours + "'");
+                                ResultSet resultat_SQL_NomSalle = requeteSQL_salle.executeQuery("select Nom_salle from salle where Id_salle = '" + resultat_SQL_seance.getString(9) + "'");
           
                                   while(resultat_SQL_NomSalle.next())
                                   {

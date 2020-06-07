@@ -3,10 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-//package vue;
+
+/**
+ *
+ * @author Thanh Kieu
+ */
+
+package vue;
+
 
 //import vue.FenetreConnexion;
-
+//import controleur.edtFenetre;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,7 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-//import modele.ModeleTableau;
+import modele.ModeleTableau;
 
 //Nouveaux imports
 import javax.swing.JButton;
@@ -37,10 +44,6 @@ import org.jfree.chart.*;
 import org.jfree.chart.plot.*; 
 import org.jfree.data.*; 
 import org.jfree.data.general.DefaultPieDataset;
-/**
- *
- * @author NivineDiallo & Thanh Kieu
- */
 
 public class Lafenetre extends JFrame implements ActionListener {
     
@@ -52,13 +55,10 @@ public class Lafenetre extends JFrame implements ActionListener {
     //Création de la barre de menu
     JMenuBar mb = new JMenuBar();
     JMenu menuCompte = new JMenu("Mon compte");
-    JMenu menuCours = new JMenu("Cours");
-    JMenu menuSalle = new JMenu("Salles");
+    
     
     //Création des items à mettre dans les menus
-    JMenuItem i1= new JMenuItem ("Emploi du temps");
-    JMenuItem i2= new JMenuItem ("Récapitulatif des cours");
-    JMenuItem i3= new JMenuItem ("Salles libres");
+    
     JMenuItem deconnexionItem= new JMenuItem ("Déconnexion");
 
     
@@ -74,6 +74,7 @@ public class Lafenetre extends JFrame implements ActionListener {
         JComboBox menu_cours;
         JComboBox menu_salle;
         JComboBox menu_groupe;
+        JComboBox EDT_Salle;
         
         Object[] liste_heure_debut = new Object[]{"8h", "9h", "10h", "11h", "12h", "13h", "14h", "15h"};
         
@@ -86,6 +87,8 @@ public class Lafenetre extends JFrame implements ActionListener {
         Object[] liste_salle = new Object[]{"Salle"};
                                         
         Object[] liste_groupe = new Object[]{"Groupe"};
+        
+        Object[] liste_EDT_Salle = new Object[]{"Disponibilité des salles"};
  
             
                                
@@ -101,8 +104,8 @@ public class Lafenetre extends JFrame implements ActionListener {
           String valeur_comboBox_coursIndex;
           String valeur_comboBox_salleIndex;
           String valeur_comboBox_groupeIndex;
-      
-
+          
+          String IDGroupe;
         
     //Fin des déclarations
           
@@ -118,7 +121,9 @@ public Lafenetre(){
     
     
 //Constructeur avec paramètres   
-public Lafenetre(int longueur, int largeur, String titre, int typeCompte){
+public Lafenetre(int longueur, int largeur, String titre, int typeCompte, String ID_duGroupe){
+    
+        IDGroupe = ID_duGroupe;
     
         //donnne la taille hauteur + largeur de la fenetre
         setSize (longueur,largeur);
@@ -136,16 +141,12 @@ public Lafenetre(int longueur, int largeur, String titre, int typeCompte){
        
         //On ajoute dans la barre des menus, les différents menus
         mb.add(menuCompte);
-        mb.add(menuCours);
-        mb.add(menuSalle);
+        
 
         //On associe un évènement au clic sur l'item de deconnexion
         deconnexionItem.addActionListener(this);
 
         //On ajooute les items dans leurs menus respectifs
-        menuCours.add(i1);
-        menuCours.add(i2);
-        menuSalle.add(i3);
         menuCompte.add(deconnexionItem);
         
         
@@ -154,7 +155,7 @@ public Lafenetre(int longueur, int largeur, String titre, int typeCompte){
         
         //Grilles
         //Définis la hauteur d'une ligne en pixel
-        table.setRowHeight(32);
+        table.setRowHeight(118);
         
         //Définis la largeur par défaut de la première colonne du tableau (horaires)
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
@@ -177,7 +178,7 @@ public Lafenetre(int longueur, int largeur, String titre, int typeCompte){
         //On appelle cette fonction pour savoir si on affiche le menu d'ajout de cours selon le type de compte (Droit)
         afficherMenuAjouter(typeCompte);
 
-        
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     }
     
     
@@ -198,7 +199,13 @@ public void actionPerformed(ActionEvent evenement)
             //Si on sélectionne un autre groupe
             if(ObjetSource == menu_groupe)
             {
-                afficherEDTGroupe();
+                afficherEDTGroupe(0);
+            }
+            
+            //Si on sélectionne un autre EDT de Salle
+            if(ObjetSource == EDT_Salle)
+            {
+                afficherEDTSalle();
             }
             
             //Si on clique sur l'item de deconnexion
@@ -229,13 +236,20 @@ public void actionPerformed(ActionEvent evenement)
                 System.out.println("Affichage stats");
                 afficherCamembert();
             }
-
+            
+            
 }
 
-//Affiche l'emploi du temps du groupe séléctionné dans le combobox menu_groupe            
-public void afficherEDTGroupe()
+
+//Affiche l'emploi du temps de salle séléctionné dans le combobox EDT_Salle            
+public void afficherEDTSalle()
 {
-      try{
+            String valeur_comboBox_edtsalleIndex = String.valueOf(EDT_Salle.getSelectedIndex());
+
+
+
+  
+    try{
           
           //On vide le tableau d'abord, car sinon les deux emplois du temps fusionneront dans l'affichage
           this.grilles.clearTableau();
@@ -246,21 +260,192 @@ public void afficherEDTGroupe()
 
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava?autoReconnect=true&useSSL=false","root","root");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
 
        
         //On récupère l'index du groupe sélectionné
-        valeur_comboBox_groupeIndex = String.valueOf(menu_groupe.getSelectedIndex());
+        valeur_comboBox_edtsalleIndex = String.valueOf(EDT_Salle.getSelectedIndex());
         
         //On associe cet index à un id pour savoir de quel groupe nous voulons supprimer les cours
-        String id_groupe = valeur_comboBox_groupeIndex;
+        String ID_salle = valeur_comboBox_edtsalleIndex;
+
+        System.out.println(ID_salle);
+        
+        
+                    //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLSeanceID = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLSeanceID=getSQLSeanceID.executeQuery("select * from seance where id_salle ='" + ID_salle + "'");
+        
+
+        
+        while(resultatgetSQLSeanceID.next())
+        {
+            
+            
+          
+    
+              //Initialise une requete qui pourra être executée pour les requêtes SQL
+              Statement requeteSQL = connexionSQL.createStatement();
+
+
+                    int DebutCours;
+                    int FinCours = resultatgetSQLSeanceID.getInt(5);
+      
+      //Permet d'afficher une séance sur plusieurs lignes du tableau si un cours dure plus d'une heure
+      for(DebutCours = resultatgetSQLSeanceID.getInt(4); DebutCours < FinCours; DebutCours++)
+      {
+          int n_ligne = 0;
+          
+          int n_colonne = 0;
 
               
+          String jour = resultatgetSQLSeanceID.getString(10);
+     
+          
+          //Selon l'heure de début (Heure_debut) recupérée depuis la table seance, on affecte un numéro de ligne à n_ligne afin de déterminer sur quelle ligne se situera le cours 
+          switch(DebutCours)
+          {
+                  case 8:
+                    n_ligne = 0;
+                    break;
+                  case 9:
+                    n_ligne = 1;
+                    break;
+                  case 10:
+                    n_ligne = 2;
+                    break;
+                  case 11:
+                    n_ligne = 3;
+                    break;
+                  case 12:
+                    n_ligne = 4;
+                    break;
+                  case 13:
+                    n_ligne = 5;
+                    break;
+                  case 14:
+                    n_ligne = 6;
+                    break;
+                  case 15:
+                    n_ligne = 7;
+                    break;
+          }
+          
+         
+          
+          //Selon le jour recupérée depuis la table seance, on affecte un numéro de colonne à n_colonne afin de déterminer sur quelle colonne (jour) se situera le cours 
+          switch(jour)
+          {
+                  case "Lundi":
+                    n_colonne = 1;
+                    break;
+                  case "Mardi":
+                    n_colonne = 2;
+                    break;
+                  case "Mercredi":
+                    n_colonne = 3;
+                    break;
+                  case "Jeudi":
+                    n_colonne = 4;
+                    break;
+                  case "Vendredi":
+                    n_colonne = 5;
+                    break;
+                  case "Samedi":
+                    n_colonne = 6;
+                    break;
+          }
+          
+          
+          //On récupère le nom du cours ainsi que la salle à afficher à l'aide de requête SQL
+          
+          
+                    //D'abord, on récupère le nom du cours
+          Statement requeteSQL_salle = connexionSQL.createStatement();
+          ResultSet resultat_SQL_NomSalle = requeteSQL_salle.executeQuery("select Nom_salle from salle where Id_salle = '" + ID_salle + "'");
+          
+          while(resultat_SQL_NomSalle.next())
+          {
+                        //D'abord, on récupère le nom du cours
+          Statement requeteSQL_cours = connexionSQL.createStatement();
+          ResultSet resultat_SQL_NomCours = requeteSQL_cours.executeQuery("select Nom_cours from cours where Id_cours = '" + resultatgetSQLSeanceID.getString(7) + "'");
+
+          while(resultat_SQL_NomCours.next())
+          {
+                  //On appelle donc une fonction qui permettra d'afficher les cours et les salles dans le tableau
+                 this.updateTableau(n_ligne, n_colonne,resultat_SQL_NomCours.getString(1) + " : " + resultat_SQL_NomSalle.getString(1));
+                  
+          }
+          
+          }
+          
+
+          
+      } //Fin for
+
+     //Fin while SQL_seance
+  
+
+} //Fin while resultatgetSQLSeanceID
+       
+        
+
+    if(valeur_comboBox_edtsalleIndex.equals("0"))
+            {
+                afficherEDTGroupe(1);
+            }
+    
+
+    }catch(Exception e){ System.out.println(e);}
+}
+//Affiche l'emploi du temps du groupe séléctionné dans le combobox menu_groupe            
+public void afficherEDTGroupe(int EDT_Etudiant)
+{
+    
+ 
+        
+      try{
+          
+          
+           String id_groupe;
+        
+        //Permet de savoir l'affichage de l'EDT se fait depuis un compte etudiant ou admin (1 : Etudiant, sinon : Admin)
+        if(EDT_Etudiant == 1)
+        {
+            id_groupe = IDGroupe;
+        }
+        else
+        {
+            valeur_comboBox_groupeIndex = String.valueOf(menu_groupe.getSelectedIndex());
+            
+            //On associe cet index à un id pour savoir de quel groupe nous voulons supprimer les cours
+            id_groupe = valeur_comboBox_groupeIndex;
+            System.out.println(id_groupe);
+        }
+        
+          
+          //On vide le tableau d'abord, car sinon les deux emplois du temps fusionneront dans l'affichage
+          this.grilles.clearTableau();
+          
+          //On réactualise l'affichage
+          fond.updateUI();
+          
+
+        //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+
+       
         //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement getSQLSeanceID = connexionSQL.createStatement();
 
         //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
         ResultSet resultatgetSQLSeanceID=getSQLSeanceID.executeQuery("select Id_seance from seance_groupe where Id_groupe ='" + id_groupe + "'");
+        
+        
+  
         
 
         
@@ -290,7 +475,9 @@ public void afficherEDTGroupe()
           int n_colonne = 0;
           
           int id_cours = resultat_SQL_seance.getInt(7);
-              
+          
+          int id_salle = resultat_SQL_seance.getInt(9);
+          
           String jour = resultat_SQL_seance.getString(10);
      
           
@@ -361,7 +548,7 @@ public void afficherEDTGroupe()
               
               //Ensuite, on récupère le nom de la salle
               Statement requeteSQL_salle = connexionSQL.createStatement();
-              ResultSet resultat_SQL_NomSalle = requeteSQL_salle.executeQuery("select Nom_salle from salle where Id_salle = '" + id_cours + "'");
+              ResultSet resultat_SQL_NomSalle = requeteSQL_salle.executeQuery("select Nom_salle from salle where Id_salle = '" + id_salle + "'");
           
                 while(resultat_SQL_NomSalle.next())
                 {
@@ -382,7 +569,6 @@ public void afficherEDTGroupe()
     }catch(Exception e){ System.out.println(e);}
 }
 
-
 //Permet d'afficher le camembert
 public void afficherCamembert()
 {
@@ -392,12 +578,35 @@ public void afficherCamembert()
     cam.setSize(600,600);
     //Camembert
     DefaultPieDataset pieDataset = new DefaultPieDataset();
-    pieDataset.setValue("Maths", new Integer(getMaths())); 
-    pieDataset.setValue("Finance", new Integer(getFinance())); 
-    pieDataset.setValue("Info", new Integer(getInfo()));
-    pieDataset.setValue("Physique", new Integer(0)); 
-    pieDataset.setValue("Anglais", new Integer(0)); 
+    
+//Depuis la BDD, on récupère tous les noms des cours existants
+    try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        
+        
+        
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQL_ListeCours = connexionSQL.createStatement();
+      
 
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQL_ListeCours=getSQL_ListeCours.executeQuery("select Nom_cours from cours");
+        
+        //Pour chaque cours trouvé, on les ajoute au camembert
+        while(resultatgetSQL_ListeCours.next())
+        {
+                String NomCours = resultatgetSQL_ListeCours.getString(1);
+                
+                pieDataset.setValue(NomCours, new Integer(getNbreCours(NomCours))); 
+        }
+        
+      
+    } catch(Exception e) { }
+    
+    
     JFreeChart camembert = ChartFactory.createPieChart("Statistiques", 
     pieDataset, true, true, true); 
     ChartPanel stat = new ChartPanel(camembert); 
@@ -405,9 +614,74 @@ public void afficherCamembert()
     cam.setVisible(true);
 }
 
+
 //Permet d'afficher ou non le menu permettant d'ajouter un cours
 public void afficherMenuAjouter(int typeCompte)
     {
+        
+        
+    if(typeCompte == 1)
+        
+    {        
+        BtnCamembert.addActionListener(this);
+       EDT_Salle = new JComboBox(liste_EDT_Salle);
+        
+        EDT_Salle.addActionListener(this);
+      
+                
+                
+                        //menu_groupe = new JComboBox(liste_groupe);
+        
+        //menu_groupe.addActionListener(this);
+        
+        
+
+        
+                try
+                {
+                        //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        
+                        //On prépare la requête permettant d'enregistrer les noms des salles existantes dans la table salles
+        Statement requeteSQL_salle = connexionSQL.createStatement();
+        ResultSet resultat_SQL_salle = requeteSQL_salle.executeQuery("select Nom_salle from salle");
+        
+        
+                
+        //On prépare la requête permettant d'enregistrer les noms des groupes existants dans la table groupes
+        Statement requeteSQL_groupe = connexionSQL.createStatement();
+        ResultSet resultat_SQL_groupe = requeteSQL_groupe.executeQuery("select Nom_groupe from groupe");
+        
+        
+        
+ 
+        
+                
+                        //Tant qu'il existe des lignes dans la table salle, on ajoute leurs noms dans le combobox menu_salles
+        while(resultat_SQL_salle.next())
+        {
+                         //menu_salle.addItem(resultat_SQL_salle.getString(1));
+
+             EDT_Salle.addItem(resultat_SQL_salle.getString(1));
+        }
+        
+        
+   
+                        
+        
+                }catch(Exception e){}
+                
+                
+                        //conteneur_combobox.add(EDT_Salle);
+                                             
+
+                        conteneur_combobox.add(BtnCamembert);
+                        conteneur_combobox.add(EDT_Salle);
+
+                        fond.add(conteneur_combobox, BorderLayout.NORTH); 
+
+    }
      
     //Si le compte a des droits d'administrateurs
     if(typeCompte == 2)
@@ -424,16 +698,17 @@ public void afficherMenuAjouter(int typeCompte)
         menu_cours = new JComboBox(liste_cours);
         menu_salle = new JComboBox(liste_salle);
         menu_groupe = new JComboBox(liste_groupe);
+        EDT_Salle = new JComboBox(liste_EDT_Salle);
         
         menu_groupe.addActionListener(this);
-
+        EDT_Salle.addActionListener(this);
         
             //Ajoute les valeurs dans les menus
             try{
 
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
         
         //On prépare la requête permettant d'enregistrer les noms des cours existants dans la table cours
         Statement requeteSQL_cours = connexionSQL.createStatement();
@@ -461,6 +736,7 @@ public void afficherMenuAjouter(int typeCompte)
         while(resultat_SQL_salle.next())
         {
              menu_salle.addItem(resultat_SQL_salle.getString(1));
+             EDT_Salle.addItem(resultat_SQL_salle.getString(1));
         }
   
   
@@ -491,11 +767,12 @@ public void afficherMenuAjouter(int typeCompte)
         conteneur_combobox.add(menu_jour);
         conteneur_combobox.add(menu_cours);
         conteneur_combobox.add(menu_salle);
-        conteneur_combobox.add(menu_groupe);
+        conteneur_combobox.add(menu_groupe); 
         conteneur_combobox.add(BtnAjouterValeur);
         conteneur_combobox.add(BtnSupprimerTout);
-/*NEW*/ conteneur_combobox.add(BtnCamembert);
-                                       
+        conteneur_combobox.add(BtnCamembert);
+        conteneur_combobox.add(EDT_Salle);
+                                      
         
         //On force le panel contenant les combobox à rester en haut de la fenêtre
         fond.add(conteneur_combobox, BorderLayout.NORTH);        
@@ -508,9 +785,7 @@ public void afficherMenuAjouter(int typeCompte)
     
 }
      
-/*public void AfficherCamembert(){
-    System.out.println("Afficher");
-}*/
+
 
 
 //Vérifie si la séance à ajouter existe déjà
@@ -536,7 +811,12 @@ public boolean CheckSiSeanceExiste(int ligneDebut, int ligneFin, int colonneJour
     
     return existe;
 }
-      
+
+     
+                   
+
+
+            
 //Met à jour l'affichage du tableau lorsqu'on modifie la table seance
 public void updateTableau(int n_ligne, int n_colonne, String nouvelle_valeur)
             {
@@ -688,100 +968,151 @@ public void ModifierValeurTableau()
                 
             }
        
+ 
+//Permet de récupérer le nombre de cours d'une certaine matière
+public int getNbreCours(String nom_cours)
+{
+    int nbre_cours = 0;
+    System.out.println("IDGroupe = " + IDGroupe);
+    
+    //Si c'est un utilisateur admin, on affiche les statistiques de tous les cours de tous les groupes
+    if(IDGroupe.equals("3"))
+    {
+    try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        
+        
+        
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCoursID = connexionSQL.createStatement();
+      
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from cours where Nom_cours = '" + nom_cours + "'");
+        
+        
+        while(resultatgetSQLCoursID.next())
+        {
+            String ID_Cours = resultatgetSQLCoursID.getString(1);
+            
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCours = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCours=getSQLCours.executeQuery("select Id_Cours from seance where Id_cours = '" + ID_Cours + "'");
+        
+   
+         while(resultatgetSQLCours.next())
+        {
+            nbre_cours = nbre_cours + 1;
+            
+        }
+         
+         
+         
+        }
+        
+
+       
+        
+        
+    }catch(Exception e){ System.out.println(e);}
+    
+    }
+   
+    else
+    {
+            try
+    {
+         //On définis les pré-requis pour les communications SQL
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
+        
+        
+        
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCoursID = connexionSQL.createStatement();
+      
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from cours where Nom_cours = '" + nom_cours + "'");
+        
+        
+        while(resultatgetSQLCoursID.next())
+        {
+            String ID_Cours = resultatgetSQLCoursID.getString(1);
+            
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCours = connexionSQL.createStatement();
+
+        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+        ResultSet resultatgetSQLCours=getSQLCours.executeQuery("select Id_seance from seance where Id_cours = '" + ID_Cours + "'");
+        
+   
+         while(resultatgetSQLCours.next())
+        {
            
-//Les méthodes qui intéragissent avec la base SQL
-
-//Permet de récupérer le nombre de cours de maths
-public int getMaths()
-{
-    int nbre_maths = 0;
-    try
-    {
-         //On définis les pré-requis pour les communications SQL
-        Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
-    
-         //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCoursID = connexionSQL.createStatement();
+            
+        //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCours_t = connexionSQL.createStatement();
 
         //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 1");
+        ResultSet resultatgetSQLCours_t=getSQLCours_t.executeQuery("select Id_seance from seance_groupe where Id_groupe = '" + IDGroupe + "'");
         
-        
-        
-        while(resultatgetSQLCoursID.next())
+        while(resultatgetSQLCours_t.next())
         {
-            nbre_maths = nbre_maths + 1;
-            
-        }
-        
-    }catch(Exception e){ System.out.println(e);}
-    
-        return nbre_maths;    
-   
-}  
-
-//Permet de récupérer le nombre de cours d'info
-public int getInfo()
-{
-    int nbre_info = 0;
-    try
-    {
-         //On définis les pré-requis pour les communications SQL
-        Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
-    
-         //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCoursID = connexionSQL.createStatement();
+                    //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getSQLCours_tt = connexionSQL.createStatement();
 
         //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 2");
+        ResultSet resultatgetSQLCours_tt=getSQLCours_tt.executeQuery("select * from seance where Id_cours = '" + ID_Cours + "' and Id_seance = '" + resultatgetSQLCours_t.getString(1) + "'");
         
-        
-        
-        while(resultatgetSQLCoursID.next())
+        while(resultatgetSQLCours_tt.next())
         {
-            nbre_info = nbre_info + 1;
+            String heureDebut = resultatgetSQLCours_tt.getString(4);
+            String heureFin = resultatgetSQLCours_tt.getString(5);
             
+           int intheureDebut = Integer.parseInt(heureDebut);
+           int intheureFin = Integer.parseInt(heureFin);
+
+            nbre_cours = nbre_cours + (intheureFin - intheureDebut);
+            
+            System.out.println("Calculs pour : " + nom_cours);
+                        System.out.println("Fin : " + intheureDebut);
+System.out.println("Debut : " + intheureFin);
+            
+             System.out.println("Difference : " + (intheureFin - intheureDebut));
+              System.out.println("");
+
         }
         
-    }catch(Exception e){ System.out.println(e);}
-    
-        return nbre_info;    
-   
-}  
-
-//Permet de récupérer le nombre de cours de finance
-public int getFinance()
-{
-    int nbre_finance = 0;
-    try
-    {
-         //On définis les pré-requis pour les communications SQL
-        Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
-    
-         //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCoursID = connexionSQL.createStatement();
-
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from seance where Id_cours = 3");
         
-        
-        
-        while(resultatgetSQLCoursID.next())
-        {
-            nbre_finance = nbre_finance + 1;
+        }
             
         }
+         
+         
+         
+        }
+        
+
+       
+        
         
     }catch(Exception e){ System.out.println(e);}
+    }
     
-        return nbre_finance;    
+    
    
+    return nbre_cours;
 }
 
-
+            
+//Les méthodes qui intéragissent avec la base SQL
+            
 //Permet d'ajouter ou de modifier les seances dans la table SQL
 public void majSQL(boolean SeanceExiste, int heure_debut, int heure_fin, String id_cours, String id_salle, String jour, int ligne, int colonne)
 {
@@ -791,7 +1122,7 @@ try{
     
         //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
 
         //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement requeteSQL = connexionSQL.createStatement();
@@ -890,7 +1221,7 @@ public void clearTable_Seance_Groupe(String id_groupe)
     
         //On charge les pré-requis pour la communication SQL
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://127.0.0.1:8889/projetjava?autoReconnect=true&useSSL=false","root","root");
+        Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
 
         //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement requeteSQL = connexionSQL.createStatement();

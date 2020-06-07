@@ -9,7 +9,7 @@
  * @author Thanh Kieu
  */
 
-package vue;
+package controleur;
 
 import java.awt.Color;
 import java.sql.*;
@@ -19,7 +19,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import vue.Lafenetre;
+//import vue.Lafenetre;
 import controleur.edtFenetre;
 
 public class FenetreConnexion extends javax.swing.JFrame {
@@ -51,7 +51,6 @@ public class FenetreConnexion extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox<>();
-        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Connexion");
@@ -63,6 +62,7 @@ public class FenetreConnexion extends javax.swing.JFrame {
 
         jTextField1.setText("Admin");
         jTextField1.setToolTipText("");
+        jTextField1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
@@ -87,7 +87,7 @@ public class FenetreConnexion extends javax.swing.JFrame {
         jLabel3.setText("ERREUR : Mauvais identifiants.");
         jLabel3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Jotaro", "Dio" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thanh", "Mathilde", "Nivine" }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);
@@ -98,8 +98,6 @@ public class FenetreConnexion extends javax.swing.JFrame {
                 jComboBox1ActionPerformed(evt);
             }
         });
-
-        jLabel4.setText("Remplissage auto pour tests");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -115,9 +113,8 @@ public class FenetreConnexion extends javax.swing.JFrame {
                                 .addComponent(jLabel1))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(27, 27, 27)
-                                .addComponent(jButton1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
+                                .addComponent(jButton1)))
+                        .addContainerGap(240, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -125,14 +122,9 @@ public class FenetreConnexion extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGap(28, 28, 28)
                                 .addComponent(jLabel2)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(74, 74, 74))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(41, 41, 41))))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(74, 74, 74))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -146,9 +138,7 @@ public class FenetreConnexion extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel4))
+                .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -223,7 +213,7 @@ ResultSet resultat_SQL=requeteSQL.executeQuery("select * from utilisateurs");
                
                while(resultat_SQL_NomGroupe.next())
                {
-                     edtFenetre FenetreEDT = new edtFenetre(identifiant_SQL, resultat_SQL.getString(1), Integer.parseInt(resultat_SQL.getString(6)), resultat_SQL_NomGroupe.getString(1));
+                     edtFenetre FenetreEDT = new edtFenetre(identifiant_SQL, resultat_SQL.getString(1), Integer.parseInt(resultat_SQL.getString(6)), resultat_SQL_NomGroupe.getString(1), resultat_SQL_Groupe.getString(1));
                      FenetreEDT.affichageFenetre();
                }
               
@@ -261,23 +251,23 @@ ResultSet resultat_SQL=requeteSQL.executeQuery("select * from utilisateurs");
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox1ItemStateChanged
-        if(jComboBox1.getSelectedItem() == "Admin")
+        if(jComboBox1.getSelectedItem() == "Thanh")
         {
             jTextField1.setText("Admin");
             jTextField2.setText("Admin");
         }
         
    
-        if(jComboBox1.getSelectedItem() == "Jotaro")
+        if(jComboBox1.getSelectedItem() == "Mathilde")
         {
-            jTextField1.setText("Jotaro");
-            jTextField2.setText("Kujo");
+            jTextField1.setText("TD2");
+            jTextField2.setText("TD2");
         }
         
-        if(jComboBox1.getSelectedItem() == "Dio")
+        if(jComboBox1.getSelectedItem() == "Nivine")
         {
-            jTextField1.setText("Dio");
-            jTextField2.setText("Brando");
+            jTextField1.setText("TD1");
+            jTextField2.setText("TD1");
         }
         
         
@@ -346,7 +336,6 @@ ResultSet resultat_SQL=requeteSQL.executeQuery("select * from utilisateurs");
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
