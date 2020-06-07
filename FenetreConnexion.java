@@ -9,7 +9,8 @@
  * @author Thanh Kieu
  */
 
-package controleur;
+package vue;
+
 
 import java.awt.Color;
 import java.sql.*;

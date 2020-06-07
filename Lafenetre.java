@@ -11,9 +11,9 @@
 
 package vue;
 
+import vue.FenetreConnexion;
+import controleur.edtFenetre;
 
-//import vue.FenetreConnexion;
-//import controleur.edtFenetre;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -972,42 +972,54 @@ public void ModifierValeurTableau()
 //Permet de récupérer le nombre de cours d'une certaine matière
 public int getNbreCours(String nom_cours)
 {
+    
+    //Permet d'enregistrer le nombre d'heures de chaque cours selon le nom reçu en paramètre
     int nbre_cours = 0;
     System.out.println("IDGroupe = " + IDGroupe);
+    
+    
+   
+        
+   
     
     //Si c'est un utilisateur admin, on affiche les statistiques de tous les cours de tous les groupes
     if(IDGroupe.equals("3"))
     {
     try
     {
-         //On définis les pré-requis pour les communications SQL
+      
+
+                     //On définis les pré-requis pour les communications SQL
         Class.forName("com.mysql.jdbc.Driver");
         Connection connexionSQL = DriverManager.getConnection("jdbc:mysql://localhost/projetjava","root","");
         
-        
-        
-         //Initialise une requete qui pourra être executée pour les requêtes SQL
+                 //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement getSQLCoursID = connexionSQL.createStatement();
-      
-
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
+    
+        
+        //Execute une requête SQL pour récupérer l'ID du cours à partir du nom
         ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from cours where Nom_cours = '" + nom_cours + "'");
+        
         
         
         while(resultatgetSQLCoursID.next())
         {
+            //Permet d'enregistrer l'ID du cours
             String ID_Cours = resultatgetSQLCoursID.getString(1);
             
          //Initialise une requete qui pourra être executée pour les requêtes SQL
         Statement getSQLCours = connexionSQL.createStatement();
 
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCours=getSQLCours.executeQuery("select Id_Cours from seance where Id_cours = '" + ID_Cours + "'");
+        //Execute une requête SQL pour récupérer les infos des séances associés à un ID de cours
+        ResultSet resultatgetSQLCours=getSQLCours.executeQuery("select * from seance where Id_cours = '" + ID_Cours + "'");
         
-   
+        //Pour chacune des séances dont il y a l'ID du cours que nous avons, on calcule le nombre d'heures de la séance et on l'ajoute à nbre_cours
          while(resultatgetSQLCours.next())
         {
-            nbre_cours = nbre_cours + 1;
+                 int heureDebut = resultatgetSQLCours.getInt(4);
+                int heureFin = resultatgetSQLCours.getInt(5);
+                
+                nbre_cours = nbre_cours + (heureFin - heureDebut);
             
         }
          
@@ -1023,8 +1035,12 @@ public int getNbreCours(String nom_cours)
     
     }
    
+    //Si c'est un étudiant
     else
     {
+        //On initialise IDCours
+        String IDCours = "";
+        
             try
     {
          //On définis les pré-requis pour les communications SQL
@@ -1038,67 +1054,50 @@ public int getNbreCours(String nom_cours)
       
 
         //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_Cours from cours where Nom_cours = '" + nom_cours + "'");
+        ResultSet resultatgetSQLCoursID=getSQLCoursID.executeQuery("select Id_seance from seance_groupe where Id_groupe = '" + IDGroupe + "'");
+
+
+         //Initialise une requete qui pourra être executée pour les requêtes SQL
+        Statement getNomCoursID = connexionSQL.createStatement();
+      
+
+        //Execute une requête SQL pour récupérer l'ID du cours associé au nom du cours
+        ResultSet resultatgetNomCoursID=getNomCoursID.executeQuery("select Id_cours from cours where Nom_cours = '" + nom_cours + "'");    
+        
+        //Recupère l'id du cours
+        while(resultatgetNomCoursID.next())
+        {
+            IDCours = resultatgetNomCoursID.getString(1);
+        }
+        
         
         
         while(resultatgetSQLCoursID.next())
         {
-            String ID_Cours = resultatgetSQLCoursID.getString(1);
+      
+            String IDSeance = resultatgetSQLCoursID.getString(1);
             
          //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCours = connexionSQL.createStatement();
+        Statement getInfoSeance = connexionSQL.createStatement();
+      
 
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCours=getSQLCours.executeQuery("select Id_seance from seance where Id_cours = '" + ID_Cours + "'");
+        //Execute une requête SQL pour récupérer les infos des séances associés à notre ID de cours et ID de séance
+        ResultSet getInfoSeanceID=getInfoSeance.executeQuery("select * from seance where Id_seance = '" + IDSeance + "' and Id_cours = '" + IDCours + "'");
         
-   
-         while(resultatgetSQLCours.next())
-        {
-           
-            
-        //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCours_t = connexionSQL.createStatement();
+            //Pour chaque séance, on fait le calcul du nombre d'heures
+            while(getInfoSeanceID.next())
+            {
+                int heureDebut = getInfoSeanceID.getInt(4);
+                int heureFin = getInfoSeanceID.getInt(5);
+                
+                nbre_cours = nbre_cours + (heureFin - heureDebut);
 
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCours_t=getSQLCours_t.executeQuery("select Id_seance from seance_groupe where Id_groupe = '" + IDGroupe + "'");
-        
-        while(resultatgetSQLCours_t.next())
-        {
-                    //Initialise une requete qui pourra être executée pour les requêtes SQL
-        Statement getSQLCours_tt = connexionSQL.createStatement();
-
-        //Execute une requête SQL pour récupérer les ID des séances associés à un ID de groupe
-        ResultSet resultatgetSQLCours_tt=getSQLCours_tt.executeQuery("select * from seance where Id_cours = '" + ID_Cours + "' and Id_seance = '" + resultatgetSQLCours_t.getString(1) + "'");
-        
-        while(resultatgetSQLCours_tt.next())
-        {
-            String heureDebut = resultatgetSQLCours_tt.getString(4);
-            String heureFin = resultatgetSQLCours_tt.getString(5);
-            
-           int intheureDebut = Integer.parseInt(heureDebut);
-           int intheureFin = Integer.parseInt(heureFin);
-
-            nbre_cours = nbre_cours + (intheureFin - intheureDebut);
-            
-            System.out.println("Calculs pour : " + nom_cours);
-                        System.out.println("Fin : " + intheureDebut);
-System.out.println("Debut : " + intheureFin);
-            
-             System.out.println("Difference : " + (intheureFin - intheureDebut));
-              System.out.println("");
-
-        }
-        
-        
-        }
+            }
             
         }
-         
-         
-         
-        }
         
-
+        
+        
        
         
         
